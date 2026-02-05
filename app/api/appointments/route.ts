@@ -1,31 +1,40 @@
-// /app/api/appointments/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { PrismaClient } from "@prisma/client";
 
-export const dynamic = "force-dynamic";
-
-export async function GET() {
-  // only accessible to authenticated users (or adjust role)
-  const user = await requireAuth();
-  const appointments = await prisma.appointment.findMany();
-  return NextResponse.json({ appointments, user });
-}
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
-  // example: only STAFF or ADMIN can create via API
-  const user = await requireAuth("STAFF");
-  const body = await req.json();
+  try {
+    const { name, email, date } = await req.json();
 
-  const appointment = await prisma.appointment.create({
-    data: {
-      date: new Date(body.date),
-      status: body.status ?? "BOOKED",
-      // store relation fields if present
-      userId: body.userId ?? null,
-      staffId: body.staffId ?? null,
-    },
-  });
+    if (!name || !email || !date) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
 
-  return NextResponse.json(appointment);
+    const appointment = await prisma.appointment.create({
+      data: {
+        name,
+        email,
+        date: new Date(date),
+      },
+    });
+
+    return NextResponse.json({ success: true, appointment });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      orderBy: { date: "asc" },
+    });
+
+    return NextResponse.json({ appointments });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
