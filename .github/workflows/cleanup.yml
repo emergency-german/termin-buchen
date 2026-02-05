@@ -5,6 +5,9 @@ on:
     - cron: '0 * * * *' # jede Stunde
   workflow_dispatch: # manuell auslösbar
 
+permissions:
+  contents: read
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
