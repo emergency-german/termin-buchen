@@ -56,9 +56,9 @@ jobs:
           find . -mindepth 1 -not -name '.git' -exec rm -rf {} +
 
           # Dateien aus dem Workflow-Repo (SRC_DIR) in das Temp-Repo kopieren
-          # Wir verwenden explizit SRC_DIR/ um nicht versehentlich Parent-Paths zu erwischen
           rsync -av --delete \
             --exclude='.git' \
+            --exclude='.github' \
             --exclude='node_modules' \
             --exclude='.next' \
             --exclude='out' \
@@ -66,7 +66,7 @@ jobs:
             --exclude='*.log' \
             "$SRC_DIR/" "$TEMP_DIR/"
 
-          # Commit & Push (nur wenn Änderungen)
+          # Git konfigurieren, commit & push
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
           git add -A
