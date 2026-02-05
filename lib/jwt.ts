@@ -2,7 +2,10 @@ import { SignJWT, jwtVerify } from "jose"
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "default_secret")
 
-export async function signToken(payload: { id: string; role: string }, expiresIn = "1h") {
+export async function signToken(
+  payload: { id: string; role: string },
+  expiresIn = "1h"
+) {
   const exp = Math.floor(Date.now() / 1000) + parseExpiry(expiresIn)
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
@@ -15,7 +18,6 @@ export async function verifyToken(token: string) {
   return payload as { id: string; role: string; iat: number; exp: number }
 }
 
-// Hilfsfunktion, um "1h", "30m", etc. in Sekunden zu konvertieren
 function parseExpiry(exp: string): number {
   const match = exp.match(/^(\d+)([smhd])$/)
   if (!match) throw new Error("Invalid expiry format")
