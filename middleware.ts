@@ -4,11 +4,9 @@ import { verifyToken } from "./lib/jwt"
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value
-
   const url = req.nextUrl.clone()
 
   if (!token) {
-    // Wenn kein Token vorhanden: normale Seite
     url.pathname = "/login"
     return NextResponse.redirect(url)
   }
@@ -16,20 +14,18 @@ export async function middleware(req: NextRequest) {
   try {
     const payload = await verifyToken(token)
 
-    // Admin/Staff Check
     if (url.pathname.startsWith("/admin") && payload.role !== "ADMIN") {
-      url.pathname = "/" // normale Seite
+      url.pathname = "/"
       return NextResponse.redirect(url)
     }
 
     if (url.pathname.startsWith("/staff") && payload.role !== "STAFF") {
-      url.pathname = "/" // normale Seite
+      url.pathname = "/"
       return NextResponse.redirect(url)
     }
 
     return NextResponse.next()
   } catch (err) {
-    // Token invalid
     url.pathname = "/login"
     return NextResponse.redirect(url)
   }
