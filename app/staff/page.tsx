@@ -1,8 +1,5 @@
-export const dynamic = "force-dynamic"; // zwingt SSR
-
-import { requireAuth } from "@/lib/auth"
+"use client"
 
 export default function StaffPage() {
-  requireAuth("STAFF")
-  return <h1>Mitarbeiter Dashboard</h1>
+  return <h1>Staff Dashboard (nur Anzeige, keine Auth)</h1>
 }
