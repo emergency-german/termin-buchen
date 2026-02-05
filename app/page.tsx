@@ -1,6 +1,7 @@
-export const dynamic = "force-dynamic"; // Seite dynamisch
+"use client" // komplett client-seitig
 
 export default function Home() {
+  // Kein requireAuth, kein cookies
   return (
     <main>
       <h1>Termin buchen</h1>
