@@ -39,23 +39,35 @@ jobs:
           SRC_DIR: ${{ github.workspace }}
         run: |
           set -euo pipefail
-
           echo "SRC_DIR = $SRC_DIR"
 
-          # Temp-Verzeichnis für Deployment erstellen
+          # Temp-Verzeichnis anlegen
           TEMP_DIR=$(mktemp -d)
           echo "Temp dir: $TEMP_DIR"
 
-          # Ziel-Repo klonen (Branch main)
-          git clone --depth 1 https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git "$TEMP_DIR"
-
-          # In das geklonte Repo wechseln
+          # In Temp-Dir wechseln und ein Git-Repo initialisieren / remote setzen
           cd "$TEMP_DIR"
+          git init
 
-          # Alte Dateien löschen außer .git
-          find . -mindepth 1 -not -name '.git' -exec rm -rf {} +
+          # Remote mit Token setzen (erlaubt push)
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
 
-          # Dateien aus dem Workflow-Repo (SRC_DIR) in das Temp-Repo kopieren
+          # Versuche, Branch main vom Remote zu holen; falls nicht vorhanden, arbeiten wir mit leerem Repo
+          if git fetch --depth=1 origin main 2>/dev/null; then
+            git reset --hard origin/main
+          else
+            # kein Remote-Branch main vorhanden -> neue Branch anlegen
+            git checkout -b main
+          fi
+
+          # Sicherheits-Check: sicherstellen, dass wir in einem Git-Repo sind
+          if [ ! -d ".git" ]; then
+            echo "Fehler: .git Verzeichnis fehlt im Temp-Repo"
+            exit 1
+          fi
+
+          # rsync: kopiere nur vom ausgecheckten Workspace in das Temp-Repo
+          # WICHTIG: .env-Dateien werden NICHT ausgeschlossen (so wie du wolltest)
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -66,9 +78,20 @@ jobs:
             --exclude='*.log' \
             "$SRC_DIR/" "$TEMP_DIR/"
 
-          # Git konfigurieren, commit & push
+          # Debug (optional): zeige Top-Level-Dateien im Temp-Repo
+          echo "Inhalt von $TEMP_DIR nach rsync:"
+          ls -la "$TEMP_DIR" | sed -n '1,200p'
+
+          # Git commit + push nur wenn Änderungen vorhanden
+          cd "$TEMP_DIR"
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
-          git add -A
-          git commit -m "Deploy Next.js source [ci skip]" || echo "No changes to commit"
-          git push origin main
+
+          # Prüfen ob es Änderungen gibt
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "Deploy Next.js source [ci skip]"
+            git push origin main
+          else
+            echo "Keine Änderungen zum committen."
+          fi
