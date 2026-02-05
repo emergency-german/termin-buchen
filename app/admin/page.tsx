@@ -1,8 +1,6 @@
-export const dynamic = "force-dynamic"; // zwingt SSR
-
-import { requireAuth } from "@/lib/auth"
+"use client" // komplett client-seitig
 
 export default function AdminPage() {
-  requireAuth("ADMIN")
-  return <h1>Admin Dashboard</h1>
+  // Kein requireAuth, kein cookies
+  return <h1>Admin Dashboard (nur Anzeige, keine Auth)</h1>
 }
