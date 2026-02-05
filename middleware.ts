@@ -1,37 +1,38 @@
-import { NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "@/lib/jwt"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { verifyToken } from "./lib/jwt"
 
-export async function middleware(req: NextRequest) { // <-- async!
-  const url = req.nextUrl.clone()
+export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value
 
-  if (url.pathname.startsWith("/admin") || url.pathname.startsWith("/staff")) {
-    if (!token) {
-      url.pathname = "/login"
-      return NextResponse.redirect(url)
-    }
+  const url = req.nextUrl.clone()
 
-    try {
-      const payload = await verifyToken(token) // <-- await hier
-
-      // Admin/Staff Check
-      if (url.pathname.startsWith("/admin") && payload.role !== "ADMIN") {
-        url.pathname = "/"
-        return NextResponse.redirect(url)
-      }
-
-      if (url.pathname.startsWith("/staff") && !["ADMIN", "STAFF"].includes(payload.role)) {
-        url.pathname = "/"
-        return NextResponse.redirect(url)
-      }
-
-    } catch (err) {
-      url.pathname = "/login"
-      return NextResponse.redirect(url)
-    }
+  if (!token) {
+    // Wenn kein Token vorhanden: normale Seite
+    url.pathname = "/login"
+    return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  try {
+    const payload = await verifyToken(token)
+
+    // Admin/Staff Check
+    if (url.pathname.startsWith("/admin") && payload.role !== "ADMIN") {
+      url.pathname = "/" // normale Seite
+      return NextResponse.redirect(url)
+    }
+
+    if (url.pathname.startsWith("/staff") && payload.role !== "STAFF") {
+      url.pathname = "/" // normale Seite
+      return NextResponse.redirect(url)
+    }
+
+    return NextResponse.next()
+  } catch (err) {
+    // Token invalid
+    url.pathname = "/login"
+    return NextResponse.redirect(url)
+  }
 }
 
 export const config = {
