@@ -33,19 +33,28 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in">
-      <div className="card max-w-md w-full p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-tr from-blue-500 to-indigo-600 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-10 animate-fade-in border border-gray-200 dark:border-gray-700">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 dark:text-white mb-6">
+          Willkommen zurück
+        </h1>
+        <p className="text-center text-gray-500 dark:text-gray-300 mb-8">
+          Bitte melde dich mit deinem Account an
+        </p>
 
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">
+            {error}
+          </div>
+        )}
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="input"
+            className="input-field"
             required
           />
           <input
@@ -53,13 +62,24 @@ export default function LoginPage() {
             placeholder="Passwort"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="input"
+            className="input-field"
             required
           />
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button
+            type="submit"
+            className="btn-primary hover:scale-105 transition-transform"
+            disabled={loading}
+          >
             {loading ? 'Login...' : 'Einloggen'}
           </button>
         </form>
+
+        <div className="mt-6 text-center text-gray-400 dark:text-gray-500">
+          Kein Account?{' '}
+          <a href="/register" className="text-indigo-600 hover:underline dark:text-indigo-400">
+            Registrieren
+          </a>
+        </div>
       </div>
     </div>
   )
