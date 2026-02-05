@@ -17,12 +17,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           OWNER: emergency-german
           REPO: termin-buchen
-          WORKFLOW_FILE_NAME: github-code-scanning/codeql.yml
+          WORKFLOW_NAME: "CodeQL"
         run: |
           echo "Fetching workflow ID..."
           WORKFLOW_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/repos/$OWNER/$REPO/actions/workflows" \
-            | jq -r ".workflows[] | select(.path==\".github/workflows/$WORKFLOW_FILE_NAME\") | .id")
+            | jq -r ".workflows[] | select(.name==\"$WORKFLOW_NAME\") | .id")
           
           if [ -z "$WORKFLOW_ID" ]; then
             echo "Workflow not found!"
@@ -31,7 +31,7 @@ jobs:
           
           echo "Fetching successful runs..."
           RUNS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_ID/runs?status=success" \
+            "https://api.github.com/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_ID/runs?status=success&per_page=100" \
             | jq -r '.workflow_runs[].id')
           
           if [ -z "$RUNS" ]; then
