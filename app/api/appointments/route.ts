@@ -1,17 +1,25 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic" // zwingt die Route, dynamisch zu sein
 
-export async function GET() {
-  const user = await requireAuth()
-  // Dummy data
-  return NextResponse.json({ appointments: [], user })
+export async function GET(request: Request) {
+  await requireAuth() // optional: Admin/Staff prüfen
+  const appointments = await prisma.appointment.findMany()
+  return NextResponse.json(appointments)
 }
 
-export async function POST(req: NextRequest) {
-  const user = await requireAuth("STAFF")
-  const body = await req.json()
-  // Hier Termin speichern
-  return NextResponse.json({ success: true, body })
+export async function POST(request: Request) {
+  const user = await requireAuth()
+  const data = await request.json()
+
+  const appointment = await prisma.appointment.create({
+    data: {
+      ...data,
+      createdBy: user.id
+    }
+  })
+
+  return NextResponse.json(appointment)
 }
