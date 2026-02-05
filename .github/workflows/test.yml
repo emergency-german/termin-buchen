@@ -1,0 +1,58 @@
+# .github/workflows/check-dependencies.yml
+name: Check & Fix Dependencies
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Check and fix versions in package.json BEFORE install
+        run: |
+          packages=$(jq -r '.dependencies + .devDependencies | keys[]' package.json)
+          
+          for pkg in $packages; do
+            current_version=$(jq -r ".dependencies[\"$pkg\"] // .devDependencies[\"$pkg\"]" package.json)
+
+            # Prüfen, ob die Version existiert
+            exists=$(npm view "$pkg@$current_version" version 2>/dev/null || echo "")
+            
+            if [ -z "$exists" ]; then
+              # Version existiert nicht → neueste stabile Version holen
+              latest=$(npm view "$pkg" versions --json | jq -r '.[]' | grep -vE '[-_](alpha|beta|rc)' | tail -n 1)
+              echo "⚠️ $pkg@$current_version existiert nicht → update auf $latest"
+              # package.json updaten
+              if jq -e ".dependencies[\"$pkg\"]" package.json > /dev/null; then
+                jq ".dependencies[\"$pkg\"]=\"$latest\"" package.json > tmp.json && mv tmp.json package.json
+              else
+                jq ".devDependencies[\"$pkg\"]=\"$latest\"" package.json > tmp.json && mv tmp.json package.json
+              fi
+            fi
+          done
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff-index --quiet HEAD || git commit -m "chore: fix dependencies to latest stable"
+
+      - name: Push changes
+        run: git push
