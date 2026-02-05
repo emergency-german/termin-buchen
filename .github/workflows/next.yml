@@ -45,19 +45,20 @@ jobs:
           TEMP_DIR=$(mktemp -d)
           echo "Temp dir: $TEMP_DIR"
 
-          # In Temp-Dir wechseln und ein Git-Repo initialisieren / remote setzen
+          # In Temp-Dir wechseln und Git-Repo initialisieren
           cd "$TEMP_DIR"
           git init
 
           # Remote mit Token setzen (erlaubt push)
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
 
-          # Versuche, Branch main vom Remote zu holen; falls nicht vorhanden, arbeiten wir mit leerem Repo
-          if git fetch --depth=1 origin main 2>/dev/null; then
-            git reset --hard origin/main
+          # Wenn origin/main existiert -> holen und lokale main darauf setzen,
+          # sonst neue lokale main erstellen
+          if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+            git fetch --depth=1 origin main
+            git checkout -B main FETCH_HEAD
           else
-            # kein Remote-Branch main vorhanden -> neue Branch anlegen
-            git checkout -b main
+            git checkout -B main
           fi
 
           # Sicherheits-Check: sicherstellen, dass wir in einem Git-Repo sind
@@ -66,8 +67,8 @@ jobs:
             exit 1
           fi
 
-          # rsync: kopiere nur vom ausgecheckten Workspace in das Temp-Repo
-          # WICHTIG: .env-Dateien werden NICHT ausgeschlossen (so wie du wolltest)
+          # rsync: kopiere exakt vom Actions-Workspace in das Temp-Repo
+          # Hinweis: .env* wird NICHT ausgeschlossen (wird also mitkopiert)
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
@@ -78,20 +79,26 @@ jobs:
             --exclude='*.log' \
             "$SRC_DIR/" "$TEMP_DIR/"
 
-          # Debug (optional): zeige Top-Level-Dateien im Temp-Repo
           echo "Inhalt von $TEMP_DIR nach rsync:"
           ls -la "$TEMP_DIR" | sed -n '1,200p'
 
-          # Git commit + push nur wenn Änderungen vorhanden
+          # Git: commit + push (unterscheide initial commit vs. update)
           cd "$TEMP_DIR"
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
 
-          # Prüfen ob es Änderungen gibt
-          if [ -n "$(git status --porcelain)" ]; then
-            git add -A
-            git commit -m "Deploy Next.js source [ci skip]"
-            git push origin main
+          if git rev-parse --verify --quiet HEAD >/dev/null; then
+            # Es gibt ein HEAD: prüfen ob Änderungen vorliegen
+            if [ -n "$(git status --porcelain)" ]; then
+              git add -A
+              git commit -m "Deploy Next.js source [ci skip]"
+              git push origin main
+            else
+              echo "Keine Änderungen zum Committen."
+            fi
           else
-            echo "Keine Änderungen zum committen."
+            # Kein HEAD vorhanden -> Initial-Commit
+            git add -A
+            git commit -m "Initial deploy: Deploy Next.js source [ci skip]"
+            git push --set-upstream origin main
           fi
