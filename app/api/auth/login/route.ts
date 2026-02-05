@@ -1,19 +1,25 @@
+import { NextResponse } from "next/server"
+import { signToken } from "@/lib/jwt"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { signToken } from "@/lib/jwt"
-import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
   const { email, password } = await req.json()
+
+  // User finden
   const user = await prisma.user.findUnique({ where: { email } })
+  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return NextResponse.json({ error: "Invalid login" }, { status: 401 })
-  }
+  // Passwort prüfen
+  const isValid = await bcrypt.compare(password, user.password)
+  if (!isValid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
 
-  const token = signToken({ id: user.id, role: user.role })
+  // JWT erzeugen
+  const token = await signToken({ id: user.id, role: user.role }) // <-- await hier
+
   const res = NextResponse.json({ success: true })
 
+  // Cookie setzen
   res.cookies.set("token", token, {
     httpOnly: true,
     path: "/"
