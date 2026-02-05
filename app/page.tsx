@@ -1,11 +1,19 @@
-"use client" // komplett client-seitig
+import Link from "next/link"
 
-export default function Home() {
-  // Kein requireAuth, kein cookies
+export default function HomePage() {
   return (
-    <main>
-      <h1>Termin buchen</h1>
-      <p>Öffentliche Seite für Kunden</p>
-    </main>
+    <div style={{ padding: 20 }}>
+      <h1>Willkommen zur Terminbuchungs-App</h1>
+      <p>
+        <Link href="/login">Login</Link>
+      </p>
+      <p>
+        <Link href="/admin">Admin Dashboard</Link>
+      </p>
+      <p>
+        <Link href="/staff">Staff Dashboard</Link>
+      </p>
+    </div>
   )
 }
+
