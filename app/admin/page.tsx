@@ -1,4 +1,5 @@
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic"; // zwingt SSR
+
 import { requireAuth } from "@/lib/auth"
 
 export default function AdminPage() {
