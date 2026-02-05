@@ -2,12 +2,10 @@ name: Build and Deploy Next.js
 
 on:
   push:
-    branches: [main]  # Trigger bei Push auf main
+    branches: [main]
 
 jobs:
   build-and-deploy:
-    permissions:
-      contents: read
     runs-on: ubuntu-latest
 
     steps:
@@ -36,13 +34,13 @@ jobs:
           # Ziel-Repo klonen
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git target
           
-          # Dateien kopieren (alles außer .github und .git) und alte Dateien löschen
-          rsync -av --exclude='.github' --exclude='.git' --delete ./ target/
-          
+          # Nur sichtbare Dateien kopieren, versteckte und Build-Dateien ignorieren
+          rsync -av --exclude='.*' --exclude='node_modules' --exclude='.next' --exclude='out' --exclude='dist' --delete ./ target/
+
           # Commit & Push
           cd target
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
           git add .
-          git commit -m "Deploy Next.js build [ci skip]" || echo "No changes to commit"
+          git commit -m "Deploy Next.js source [ci skip]" || echo "No changes to commit"
           git push origin main
