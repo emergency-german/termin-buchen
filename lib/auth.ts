@@ -7,8 +7,7 @@ export async function requireAuth(role?: "ADMIN" | "STAFF") {
 
   if (!token) throw new Error("Unauthorized")
 
-  // ⚡ await hinzufügen, da verifyToken ein Promise zurückgibt
-  const data = await verifyToken(token) as { id: string; role: string; iat: number; exp: number }
+  const data = await verifyToken(token)
 
   if (role && data.role !== role) {
     throw new Error("Forbidden")
