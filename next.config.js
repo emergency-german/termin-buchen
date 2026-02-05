@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Entferne oder kommentiere:
-  // output: 'export',
+  // Wichtig: kein 'output: export', sonst brechen dynamische API-Routen
 }
+
 module.exports = nextConfig
