@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -36,23 +36,39 @@ jobs:
           TARGET_REPO: maxytmaxyt/admin-dash-vikilux
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           EMAIL: ${{ secrets.EMAIL }}
+          SRC_DIR: ${{ github.workspace }}
         run: |
-          # Temp-Verzeichnis für Deployment
+          set -euo pipefail
+
+          echo "SRC_DIR = $SRC_DIR"
+
+          # Temp-Verzeichnis für Deployment erstellen
           TEMP_DIR=$(mktemp -d)
-          
-          # Ziel-Repo klonen
-          git clone --depth 1 https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git $TEMP_DIR
-          
+          echo "Temp dir: $TEMP_DIR"
+
+          # Ziel-Repo klonen (Branch main)
+          git clone --depth 1 https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git "$TEMP_DIR"
+
+          # In das geklonte Repo wechseln
+          cd "$TEMP_DIR"
+
           # Alte Dateien löschen außer .git
-          cd $TEMP_DIR
           find . -mindepth 1 -not -name '.git' -exec rm -rf {} +
 
-          # Dateien aus Workflow-Repo kopieren
-          rsync -av --exclude='.*' --exclude='node_modules' --exclude='.next' --exclude='out' --exclude='dist' ../ ./ 
+          # Dateien aus dem Workflow-Repo (SRC_DIR) in das Temp-Repo kopieren
+          # Wir verwenden explizit SRC_DIR/ um nicht versehentlich Parent-Paths zu erwischen
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='out' \
+            --exclude='dist' \
+            --exclude='*.log' \
+            "$SRC_DIR/" "$TEMP_DIR/"
 
-          # Commit & Push
+          # Commit & Push (nur wenn Änderungen)
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
-          git add .
+          git add -A
           git commit -m "Deploy Next.js source [ci skip]" || echo "No changes to commit"
           git push origin main
