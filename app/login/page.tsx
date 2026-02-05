@@ -2,21 +2,22 @@
 
 export default function LoginPage() {
   async function login(formData: FormData) {
-    await fetch("/api/auth/login", {
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({
         email: formData.get("email"),
         password: formData.get("password")
       })
     })
-    location.href = "/"
+    if (res.ok) location.href = "/"
+    else alert("Login fehlgeschlagen")
   }
 
   return (
     <form action={login}>
       <input name="email" placeholder="Email" />
       <input name="password" type="password" placeholder="Passwort" />
-      <button>Login</button>
+      <button type="submit">Login</button>
     </form>
   )
 }
