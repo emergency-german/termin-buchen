@@ -26,6 +26,6 @@
     "prisma": "^5.4.0",
     "typescript": "^5.2.2",
     "eslint": "8.48.0",
-    "eslint-config-next": "14.1.0"
+    "eslint-config-next": "16.1.6"
   }
 }
