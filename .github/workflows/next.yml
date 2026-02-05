@@ -37,14 +37,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           EMAIL: ${{ secrets.EMAIL }}
         run: |
-          # Ziel-Repo klonen
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git target
-          
-          # Nur sichtbare Dateien kopieren, versteckte und Build-Dateien ignorieren
-          rsync -av --exclude='.*' --exclude='node_modules' --exclude='.next' --exclude='out' --exclude='dist' --delete ./ target/
+          # Ins Workspace wechseln
+          cd $GITHUB_WORKSPACE
+
+          # Ziel-Repo direkt hier klonen
+          git init
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Alte Dateien löschen außer .git
+          find . -mindepth 1 -not -name '.git' -exec rm -rf {} +
+
+          # Kopiere alle Dateien aus dem Workflow-Repo ins Root
+          rsync -av --exclude='.*' --exclude='node_modules' --exclude='.next' --exclude='out' --exclude='dist' ./ ./ 
 
           # Commit & Push
-          cd target
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
           git add .
