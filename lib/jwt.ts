@@ -1,11 +1,17 @@
 import jwt from "jsonwebtoken"
 
-const SECRET = process.env.JWT_SECRET!
+const SECRET = process.env.JWT_SECRET || "supersecretkey"
 
-export function signToken(payload: object) {
-  return jwt.sign(payload, SECRET, { expiresIn: "7d" })
+// Token erzeugen
+export function signToken(payload: { id: string; role: string }, expiresIn = "1h") {
+  return jwt.sign(payload, SECRET, { expiresIn })
 }
 
+// Token prüfen
 export function verifyToken(token: string) {
-  return jwt.verify(token, SECRET)
+  try {
+    return jwt.verify(token, SECRET) as { id: string; role: string; iat: number; exp: number }
+  } catch (err) {
+    throw new Error("Invalid token")
+  }
 }
