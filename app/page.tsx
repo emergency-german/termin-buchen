@@ -1,10 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function Page() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -23,56 +21,54 @@ export default function LoginPage() {
       })
 
       const data = await res.json()
+      if (!res.ok) throw new Error(data.message || "Login failed")
 
-      if (res.ok) {
-        router.push("/appointments") // Weiterleitung nach Login
-      } else {
-        setError(data.error || "Ungültige Login-Daten")
-      }
-    } catch (err) {
-      console.error(err)
-      setError("Netzwerkfehler")
-    } finally {
+      // Erfolgreich eingeloggt -> Weiterleitung z.B. Dashboard
+      window.location.href = "/dashboard"
+    } catch (err: any) {
+      setError(err.message)
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 p-4">
-      <div className="bg-white dark:bg-gray-800 p-10 rounded-xl shadow-xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-white">
-          Willkommen
+    <main className="flex items-center justify-center min-h-screen bg-gradient">
+      <div className="bg-white dark:bg-gray-900 shadow rounded p-10 w-full max-w-md animate-slide-in">
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+          Willkommen zurück
         </h1>
+
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
             type="email"
-            placeholder="Email"
+            placeholder="E-Mail"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             required
-            className="border p-3 rounded focus:ring-2 focus:ring-blue-400 outline-none"
           />
           <input
             type="password"
             placeholder="Passwort"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             required
-            className="border p-3 rounded focus:ring-2 focus:ring-blue-400 outline-none"
           />
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <button
             type="submit"
+            className="btn mt-2"
             disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded font-semibold transition disabled:opacity-50"
           >
-            {loading ? "Einloggen..." : "Einloggen"}
+            {loading ? "Logging in..." : "Login"}
           </button>
-          {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
         </form>
-        <p className="mt-6 text-center text-gray-600 dark:text-gray-400">
-          Noch keinen Account? <a href="/register" className="text-blue-600 underline">Registrieren</a>
+
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          Noch kein Account? <a href="/register" className="font-semibold text-blue-500 hover:underline">Registrieren</a>
         </p>
       </div>
-    </div>
+    </main>
   )
 }
