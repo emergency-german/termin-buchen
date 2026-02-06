@@ -1,35 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (res.ok) {
-      window.location.href = "/";
-    } else {
-      alert("Registrierung fehlgeschlagen");
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Registrierung fehlgeschlagen");
+        return;
+      }
+
+      router.push("/admin");
+    } catch (err) {
+      console.error(err);
+      alert("Server Fehler");
     }
   }
 
   return (
     <div className="page-container">
-      {/* HEADER */}
       <header className="page-header">
         <h1 className="brand-title">Termin buchen</h1>
       </header>
 
-      {/* REGISTER FORM */}
       <main className="login-wrapper">
         <form className="form" onSubmit={handleRegister}>
           <p id="heading">Konto erstellen</p>
@@ -60,20 +71,20 @@ export default function RegisterPage() {
             <button type="submit" className="button1">
               Registrieren
             </button>
+
             <button
               type="button"
               className="button2"
-              onClick={() => (window.location.href = "/")}
+              onClick={() => router.push("/")}
             >
-              Zurück zum Login
+              Zurück
             </button>
           </div>
         </form>
       </main>
 
-      {/* FOOTER */}
       <footer className="page-footer">
-        © {new Date().getFullYear()} Termin System • All rights reserved
+        © {new Date().getFullYear()} Termin System
       </footer>
     </div>
   );
