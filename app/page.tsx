@@ -1,86 +1,110 @@
-'use client'
+/* From Uiverse.io by Praashoo7 */ 
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 0.4em;
+  background-color: #171717;
+  border-radius: 25px;
+  transition: .4s ease-in-out;
+}
 
-import { useState } from 'react'
+.form:hover {
+  transform: scale(1.05);
+  border: 1px solid black;
+}
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+#heading {
+  text-align: center;
+  margin: 2em;
+  color: rgb(255, 255, 255);
+  font-size: 1.2em;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  border-radius: 25px;
+  padding: 0.6em;
+  border: none;
+  outline: none;
+  color: white;
+  background-color: #171717;
+  box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+}
 
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+.input-icon {
+  height: 1.3em;
+  width: 1.3em;
+  fill: white;
+}
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Login fehlgeschlagen')
+.input-field {
+  background: none;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: #d3d3d3;
+}
 
-      // Erfolgreich eingeloggt → Weiterleitung
-      window.location.href = '/dashboard'
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+.form .btn {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 2.5em;
+}
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-tr from-blue-500 to-indigo-600 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-xl p-10 animate-fade-in border border-gray-200 dark:border-gray-700">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 dark:text-white mb-6">
-          Willkommen zurück
-        </h1>
-        <p className="text-center text-gray-500 dark:text-gray-300 mb-8">
-          Bitte melde dich mit deinem Account an
-        </p>
+.button1 {
+  padding: 0.5em;
+  padding-left: 1.1em;
+  padding-right: 1.1em;
+  border-radius: 5px;
+  margin-right: 0.5em;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: #252525;
+  color: white;
+}
 
-        {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">
-            {error}
-          </div>
-        )}
+.button1:hover {
+  background-color: black;
+  color: white;
+}
 
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="input-field"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Passwort"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="input-field"
-            required
-          />
-          <button
-            type="submit"
-            className="btn-primary hover:scale-105 transition-transform"
-            disabled={loading}
-          >
-            {loading ? 'Login...' : 'Einloggen'}
-          </button>
-        </form>
+.button2 {
+  padding: 0.5em;
+  padding-left: 2.3em;
+  padding-right: 2.3em;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: #252525;
+  color: white;
+}
 
-        <div className="mt-6 text-center text-gray-400 dark:text-gray-500">
-          Kein Account?{' '}
-          <a href="/register" className="text-indigo-600 hover:underline dark:text-indigo-400">
-            Registrieren
-          </a>
-        </div>
-      </div>
-    </div>
-  )
+.button2:hover {
+  background-color: black;
+  color: white;
+}
+
+.button3 {
+  margin-bottom: 3em;
+  padding: 0.5em;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  transition: .4s ease-in-out;
+  background-color: #252525;
+  color: white;
+}
+
+.button3:hover {
+  background-color: red;
+  color: white;
 }
