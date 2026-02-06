@@ -1,110 +1,56 @@
-/* From Uiverse.io by Praashoo7 */ 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 2em;
-  padding-right: 2em;
-  padding-bottom: 0.4em;
-  background-color: #171717;
-  border-radius: 25px;
-  transition: .4s ease-in-out;
-}
+"use client";
 
-.form:hover {
-  transform: scale(1.05);
-  border: 1px solid black;
-}
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-#heading {
-  text-align: center;
-  margin: 2em;
-  color: rgb(255, 255, 255);
-  font-size: 1.2em;
-}
+export default function LoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-.field {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  border-radius: 25px;
-  padding: 0.6em;
-  border: none;
-  outline: none;
-  color: white;
-  background-color: #171717;
-  box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
-}
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
 
-.input-icon {
-  height: 1.3em;
-  width: 1.3em;
-  fill: white;
-}
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-.input-field {
-  background: none;
-  border: none;
-  outline: none;
-  width: 100%;
-  color: #d3d3d3;
-}
+    if (res.ok) {
+      router.push("/admin");
+    }
+  }
 
-.form .btn {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  margin-top: 2.5em;
-}
+  return (
+    <div className="login-wrapper">
+      <form className="form" onSubmit={handleLogin}>
+        <p id="heading">Login</p>
 
-.button1 {
-  padding: 0.5em;
-  padding-left: 1.1em;
-  padding-right: 1.1em;
-  border-radius: 5px;
-  margin-right: 0.5em;
-  border: none;
-  outline: none;
-  transition: .4s ease-in-out;
-  background-color: #252525;
-  color: white;
-}
+        <div className="field">
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
 
-.button1:hover {
-  background-color: black;
-  color: white;
-}
+        <div className="field">
+          <input
+            className="input-field"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-.button2 {
-  padding: 0.5em;
-  padding-left: 2.3em;
-  padding-right: 2.3em;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-  transition: .4s ease-in-out;
-  background-color: #252525;
-  color: white;
-}
-
-.button2:hover {
-  background-color: black;
-  color: white;
-}
-
-.button3 {
-  margin-bottom: 3em;
-  padding: 0.5em;
-  border-radius: 5px;
-  border: none;
-  outline: none;
-  transition: .4s ease-in-out;
-  background-color: #252525;
-  color: white;
-}
-
-.button3:hover {
-  background-color: red;
-  color: white;
+        <div className="btn">
+          <button className="button1">Login</button>
+        </div>
+      </form>
+    </div>
+  );
 }
