@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -18,39 +16,69 @@ export default function LoginPage() {
     });
 
     if (res.ok) {
-      router.push("/admin");
+      window.location.href = "/admin";
+    } else {
+      alert("Login fehlgeschlagen");
     }
   }
 
   return (
-    <div className="login-wrapper">
-      <form className="form" onSubmit={handleLogin}>
-        <p id="heading">Login</p>
+    <div className="page-container">
+      {/* HEADER */}
+      <header className="page-header">
+        <h1 className="brand-title">Termin buchen</h1>
+      </header>
 
-        <div className="field">
-          <input
-            className="input-field"
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
+      {/* MAIN LOGIN */}
+      <main className="login-wrapper">
+        <form className="form" onSubmit={handleLogin}>
+          <p id="heading">Login</p>
 
-        <div className="field">
-          <input
-            className="input-field"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+          <div className="field">
+            <input
+              className="input-field"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
 
-        <div className="btn">
-          <button className="button1">Login</button>
-        </div>
-      </form>
+          <div className="field">
+            <input
+              className="input-field"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="btn">
+            <button type="submit" className="button1">
+              Login
+            </button>
+            <button
+              type="button"
+              className="button2"
+              onClick={() => (window.location.href = "/register")}
+            >
+              Konto erstellen
+            </button>
+          </div>
+
+          <button type="button" className="button3">
+            Passwort vergessen
+          </button>
+        </form>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="page-footer">
+        © {new Date().getFullYear()} Termin System • All rights reserved
+      </footer>
     </div>
   );
 }
