@@ -1,11 +1,33 @@
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose"
 
-const SECRET = process.env.JWT_SECRET as string;
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "default_secret")
 
-export function signToken(payload: { id: string; role: string }, expiresIn = "1h") {
-  return jwt.sign(payload, SECRET, { expiresIn });
+export async function signToken(
+  payload: { id: string; role: string },
+  expiresIn = "1h"
+) {
+  const exp = Math.floor(Date.now() / 1000) + parseExpiry(expiresIn)
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime(exp)
+    .sign(SECRET)
 }
 
-export function verifyToken(token: string) {
-  return jwt.verify(token, SECRET) as { id: string; role: string; iat: number; exp: number };
+export async function verifyToken(token: string) {
+  const { payload } = await jwtVerify(token, SECRET)
+  return payload as { id: string; role: string; iat: number; exp: number }
+}
+
+function parseExpiry(exp: string): number {
+  const match = exp.match(/^(\d+)([smhd])$/)
+  if (!match) throw new Error("Invalid expiry format")
+  const [, amountStr, unit] = match
+  const amount = parseInt(amountStr)
+  switch (unit) {
+    case "s": return amount
+    case "m": return amount * 60
+    case "h": return amount * 3600
+    case "d": return amount * 86400
+    default: throw new Error("Invalid time unit")
+  }
 }
