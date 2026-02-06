@@ -1,9 +1,9 @@
 name: Build and Deploy Next.js
 
 on:
-   push:
-     branches: [main]
- workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,13 +20,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            node-modules-
 
       - name: Install Dependencies
         run: npm ci
 
+      - name: Cache Prisma Client
+        uses: actions/cache@v3
+        with:
+          path: node_modules/.prisma
+          key: prisma-client-${{ hashFiles('prisma/schema.prisma') }}
+          restore-keys: |
+            prisma-client-
+
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Cache Next.js Build
+        uses: actions/cache@v3
+        with:
+          path: .next/cache
+          key: next-build-${{ github.sha }}
+          restore-keys: |
+            next-build-
 
       - name: Build Next.js
         run: npx --yes next build
@@ -42,19 +65,12 @@ jobs:
           set -euo pipefail
           echo "SRC_DIR = $SRC_DIR"
 
-          # Temp-Verzeichnis anlegen
           TEMP_DIR=$(mktemp -d)
           echo "Temp dir: $TEMP_DIR"
-
-          # In Temp-Dir wechseln und Git-Repo initialisieren
           cd "$TEMP_DIR"
           git init
-
-          # Remote mit Token setzen (erlaubt push)
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${TARGET_REPO}.git"
 
-          # Wenn origin/main existiert -> holen und lokale main darauf setzen,
-          # sonst neue lokale main erstellen
           if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
             git fetch --depth=1 origin main
             git checkout -B main FETCH_HEAD
@@ -62,34 +78,22 @@ jobs:
             git checkout -B main
           fi
 
-          # Sicherheits-Check: sicherstellen, dass wir in einem Git-Repo sind
-          if [ ! -d ".git" ]; then
-            echo "Fehler: .git Verzeichnis fehlt im Temp-Repo"
-            exit 1
-          fi
-
-          # rsync: kopiere exakt vom Actions-Workspace in das Temp-Repo
-          # Hinweis: .env* wird NICHT ausgeschlossen (wird also mitkopiert)
           rsync -av --delete \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
-            --exclude='.next' \
+            --exclude='.next/cache' \
             --exclude='out' \
+            --exclude='.next' \
             --exclude='dist' \
             --exclude='*.log' \
             "$SRC_DIR/" "$TEMP_DIR/"
 
-          echo "Inhalt von $TEMP_DIR nach rsync:"
-          ls -la "$TEMP_DIR" | sed -n '1,200p'
-
-          # Git: commit + push (unterscheide initial commit vs. update)
           cd "$TEMP_DIR"
           git config user.name "maxytmaxyt"
           git config user.email "${EMAIL}"
 
           if git rev-parse --verify --quiet HEAD >/dev/null; then
-            # Es gibt ein HEAD: prüfen ob Änderungen vorliegen
             if [ -n "$(git status --porcelain)" ]; then
               git add -A
               git commit -m "Deploy Next.js source [ci skip]"
@@ -98,7 +102,6 @@ jobs:
               echo "Keine Änderungen zum Committen."
             fi
           else
-            # Kein HEAD vorhanden -> Initial-Commit
             git add -A
             git commit -m "Initial deploy: Deploy Next.js source [ci skip]"
             git push --set-upstream origin main
