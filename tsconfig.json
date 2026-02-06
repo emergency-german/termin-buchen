@@ -4,11 +4,28 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "strict": true,
     "noEmit": true,
+
     "module": "esnext",
     "moduleResolution": "bundler",
+
     "jsx": "preserve",
+
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
-  }
+    },
+
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
