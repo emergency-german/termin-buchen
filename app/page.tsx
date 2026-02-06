@@ -1,25 +1,65 @@
 "use client";
 
-import { useActionState } from "react";
-import { loginAction } from "./actions";
+import { useActionState, useState } from "react";
+import { loginAction, registerAction } from "./actions";
 
 export default function LoginPage() {
-  // state empfängt das { error: "..." } Objekt vom Server
-  const [state, formAction, isPending] = useActionState(loginAction, null);
+  const [isRegister, setIsRegister] = useState(false);
+  
+  // Wählt die passende Action basierend auf dem Modus
+  const currentAction = isRegister ? registerAction : loginAction;
+  const [state, formAction, isPending] = useActionState(currentAction, null);
 
   return (
     <div className="login-wrapper">
-      <form action={formAction} className="form">
-        <p id="heading">Login</p>
-        
-        {state?.error && <div className="error-msg">{state.error}</div>}
+      <form className="form" action={formAction}>
+        <p id="heading">{isRegister ? "Registrieren" : "Login"}</p>
 
-        <input name="email" type="email" placeholder="Email" required />
-        <input name="password" type="password" placeholder="Passwort" required />
+        {state?.error && (
+          <p style={{ color: "#ff4d4d", fontSize: "0.8rem", textAlign: "center" }}>
+            {state.error}
+          </p>
+        )}
 
-        <button type="submit" disabled={isPending}>
-          {isPending ? "Prüfe..." : "Anmelden"}
-        </button>
+        <div className="field">
+          <input
+            name="email"
+            placeholder="Email"
+            className="input-field"
+            type="email"
+            required
+          />
+        </div>
+
+        <div className="field">
+          <input
+            name="password"
+            placeholder="Password"
+            className="input-field"
+            type="password"
+            required
+          />
+        </div>
+
+        <div className="btn">
+          <button className="button1" type="submit" disabled={isPending}>
+            {isPending ? "Warten..." : isRegister ? "Account erstellen" : "Login"}
+          </button>
+          
+          <button 
+            className="button2" 
+            type="button" 
+            onClick={() => setIsRegister(!isRegister)}
+          >
+            {isRegister ? "Zum Login" : "Sign Up"}
+          </button>
+        </div>
+
+        {!isRegister && (
+          <button className="button3" type="button">
+            Forgot Password
+          </button>
+        )}
       </form>
     </div>
   );
