@@ -1,80 +1,80 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault();
 
-    if (password !== confirm) {
-      setError('Passwörter stimmen nicht überein')
-      setLoading(false)
-      return
-    }
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Registrierung fehlgeschlagen')
-
-      window.location.href = '/login'
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    if (res.ok) {
+      window.location.href = "/";
+    } else {
+      alert("Registrierung fehlgeschlagen");
     }
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in">
-      <div className="card max-w-md w-full p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">Registrieren</h2>
+    <div className="page-container">
+      {/* HEADER */}
+      <header className="page-header">
+        <h1 className="brand-title">Termin buchen</h1>
+      </header>
 
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+      {/* REGISTER FORM */}
+      <main className="login-wrapper">
+        <form className="form" onSubmit={handleRegister}>
+          <p id="heading">Konto erstellen</p>
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="input"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Passwort"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="input"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Passwort wiederholen"
-            value={confirm}
-            onChange={e => setConfirm(e.target.value)}
-            className="input"
-            required
-          />
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Registrieren...' : 'Registrieren'}
-          </button>
+          <div className="field">
+            <input
+              className="input-field"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <input
+              className="input-field"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="btn">
+            <button type="submit" className="button1">
+              Registrieren
+            </button>
+            <button
+              type="button"
+              className="button2"
+              onClick={() => (window.location.href = "/")}
+            >
+              Zurück zum Login
+            </button>
+          </div>
         </form>
-      </div>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="page-footer">
+        © {new Date().getFullYear()} Termin System • All rights reserved
+      </footer>
     </div>
-  )
+  );
 }
