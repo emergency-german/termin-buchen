@@ -7,29 +7,34 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function loginAction(prevState: any, formData: FormData) {
-  const email = formData.get("email")?.toString() || "";
-  const password = formData.get("password")?.toString() || "";
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
 
-  if (!email || !password) return { error: "Email und Passwort benötigt" };
+  if (!email || !password) return { error: "Daten unvollständig" };
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return { error: "User nicht gefunden" };
+  try {
+    // Prisma wird NUR hier aufgerufen (Server-Side)
+    const user = await prisma.user.findUnique({ where: { email } });
+    
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return { error: "Ungültige Anmeldedaten" };
+    }
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return { error: "Falsches Passwort" };
+    const token = await signToken({ id: user.id, role: user.role }, "7d");
+    const cookieStore = await cookies();
+    
+    cookieStore.set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  } catch (e) {
+    return { error: "Datenbankfehler" };
+  }
 
-  const token = await signToken({ id: user.id, role: user.role }, "7d");
-
-  // In Next.js 15+ ist cookies() async
-  const cookieStore = await cookies();
-  cookieStore.set({
-    name: "token",
-    value: token,
-    httpOnly: true,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-
+  // Redirect muss außerhalb des try/catch stehen
   redirect("/admin");
 }
