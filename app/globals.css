@@ -1,19 +1,11 @@
-/* Background Wrapper */
 body {
   margin: 0;
-  padding: 0;
   font-family: system-ui, sans-serif;
   background: linear-gradient(135deg, #0f0f0f, #1e1e1e);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-}
-
-.login-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 /* From Uiverse.io by Praashoo7 */
@@ -24,83 +16,5 @@ body {
   padding: 2em;
   background-color: #171717;
   border-radius: 25px;
-  transition: 0.4s ease-in-out;
   width: 320px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-}
-
-.form:hover {
-  transform: scale(1.03);
-}
-
-#heading {
-  text-align: center;
-  margin-bottom: 1.5em;
-  color: white;
-  font-size: 1.4em;
-  font-weight: 600;
-}
-
-.field {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  border-radius: 25px;
-  padding: 0.8em;
-  color: white;
-  background-color: #111;
-  box-shadow: inset 2px 5px 10px black;
-}
-
-.input-icon {
-  height: 1.3em;
-  width: 1.3em;
-  fill: white;
-}
-
-.input-field {
-  background: none;
-  border: none;
-  outline: none;
-  width: 100%;
-  color: #d3d3d3;
-  font-size: 0.9rem;
-}
-
-.form .btn {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1.5em;
-}
-
-.button1,
-.button2,
-.button3 {
-  padding: 0.6em;
-  border-radius: 8px;
-  border: none;
-  transition: 0.3s ease-in-out;
-  background-color: #252525;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.button1:hover,
-.button2:hover {
-  background-color: black;
-}
-
-.button3 {
-  margin-top: 1em;
-}
-
-.button3:hover {
-  background-color: red;
-}
-
-.error {
-  color: #ff4d4d;
-  text-align: center;
-  font-size: 0.85rem;
 }
