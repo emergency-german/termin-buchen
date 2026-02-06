@@ -1,17 +1,19 @@
 import { cookies } from "next/headers";
-import { verifyToken } from "./jwt";
+import { verifyToken } from "@/lib/jwt";
 
 export async function requireAuth(role?: "ADMIN" | "STAFF") {
-  const cookieStore = cookies();
+  const cookieStore = await cookies(); // ✅ WICHTIG
   const token = cookieStore.get("token")?.value;
 
-  if (!token) throw new Error("Unauthorized");
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-  const data = await verifyToken(token);
+  const payload = await verifyToken(token);
 
-  if (role && data.role !== role) {
+  if (role && payload.role !== role) {
     throw new Error("Forbidden");
   }
 
-  return data;
+  return payload;
 }
