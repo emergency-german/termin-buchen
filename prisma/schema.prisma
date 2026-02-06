@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql" // oder "postgresql"/"sqlite"
+  provider = "postgresql" // Von mysql auf postgresql geändert
   url      = env("DATABASE_URL")
 }
 
@@ -11,7 +11,7 @@ model User {
   id       String @id @default(uuid())
   email    String @unique
   password String
-  role     String @default("STAFF")
+  role     Role   @default(STAFF) // Nutzt jetzt das Enum unten
 }
 
 model Appointment {
@@ -21,7 +21,6 @@ model Appointment {
   date      DateTime
   createdAt DateTime @default(now())
 }
-
 
 enum Role {
   USER
