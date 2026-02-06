@@ -1,76 +1,78 @@
-"use client"; // damit wir clientseitige Events nutzen können
-
-import { useState } from "react";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/jwt";
+import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { FormEvent } from "react";
+
+export const metadata = {
+  title: "Login",
+};
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // Server Action für Login
+  async function loginAction(formData: FormData) {
+    "use server"; // Server Action
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const email = formData.get("email")?.toString() || "";
+    const password = formData.get("password")?.toString() || "";
 
-    try {
-      // Direkte Prüfung in der Page
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        setError("User not found");
-        return;
-      }
-
-      const valid = await bcrypt.compare(password, user.password);
-      if (!valid) {
-        setError("Invalid password");
-        return;
-      }
-
-      const token = await signToken({ id: user.id, role: user.role }, "7d");
-
-      // Cookie setzen (clientseitig nicht optimal, besser via API, aber geht auch hier)
-      document.cookie = `token=${token}; path=/; HttpOnly`;
-
-      setError("");
-      alert("Login successful!"); // später redirect zu /admin oder /dashboard
-
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong");
+    if (!email || !password) {
+      throw new Error("Email und Passwort müssen ausgefüllt sein");
     }
-  };
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error("User not found");
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new Error("Invalid password");
+
+    const token = await signToken({ id: user.id, role: user.role }, "7d");
+
+    // HttpOnly Cookie setzen
+    cookies().set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 7 Tage
+    });
+
+    // Redirect nach erfolgreichem Login
+    redirect("/admin");
+  }
 
   return (
     <div className="login-wrapper">
-      <form className="form" onSubmit={handleLogin}>
+      <form className="form" action={loginAction}>
         <p id="heading">Login</p>
+
         <div className="field">
           <input
+            name="email"
             placeholder="Email"
             className="input-field"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
+
         <div className="field">
           <input
+            name="password"
             placeholder="Password"
             className="input-field"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+
         <div className="btn">
           <button className="button1" type="submit">Login</button>
           <button className="button2" type="button">Sign Up</button>
         </div>
-        <button className="button3">Forgot Password</button>
+
+        <button className="button3" type="button">Forgot Password</button>
       </form>
     </div>
   );
