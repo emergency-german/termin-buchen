@@ -126,59 +126,81 @@ body {
 /* ============================= */
 /* BUTTONS */
 /* ============================= */
+/* ============================= */
+/* BUTTONS */
+/* ============================= */
 
 .btn {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .button1,
 .button2,
 .button3 {
-  padding: 0.6em 1.5em;
-  border-radius: 10px;
-  border: none;
+  padding: 0.65em 1.6em;
+  border-radius: 12px;
+  border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Primary Button */
 .button1 {
-  background: linear-gradient(90deg, #3a3a3a, #222);
+  background: linear-gradient(135deg, #2a2a2a, #1c1c1c);
   color: white;
-  flex: 1;
+  border: 1px solid #2e2e2e;
 }
 
 .button1:hover {
-  background: linear-gradient(90deg, #4a4a4a, #2a2a2a);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  border-color: #444;
+}
+
+.button1:active {
+  transform: translateY(0px);
+  box-shadow: none;
 }
 
 /* Secondary Button */
 .button2 {
-  background: #1f1f1f;
-  color: #aaa;
+  background: #141414;
+  color: #999;
+  border: 1px solid #222;
 }
 
 .button2:hover {
-  background: #2a2a2a;
+  background: #1f1f1f;
   color: white;
+  border-color: #333;
 }
 
-/* Danger / Forgot */
+/* Forgot Button */
 .button3 {
-  background: #1a1a1a;
-  color: #888;
-  margin-top: 10px;
+  background: transparent;
+  color: #777;
+  margin-top: 14px;
+  border: none;
 }
 
 .button3:hover {
-  background: #400;
-  color: white;
+  color: #ff4d4d;
 }
+
+/* Focus (Accessibility + clean glow) */
+.button1:focus,
+.button2:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
 
 /* ============================= */
 /* SCROLLBAR */
