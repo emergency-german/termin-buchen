@@ -1,36 +1,31 @@
+"use client";
+
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { FormEvent } from "react";
-
-export const metadata = {
-  title: "Login",
-};
 
 export default function LoginPage() {
-  // Server Action für Login
   async function loginAction(formData: FormData) {
     "use server"; // Server Action
 
     const email = formData.get("email")?.toString() || "";
     const password = formData.get("password")?.toString() || "";
 
-    if (!email || !password) {
-      throw new Error("Email und Passwort müssen ausgefüllt sein");
-    }
+    if (!email || !password) throw new Error("Email und Passwort benötigt");
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error("User not found");
+    if (!user) throw new Error("User nicht gefunden");
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) throw new Error("Invalid password");
+    if (!valid) throw new Error("Falsches Passwort");
 
     const token = await signToken({ id: user.id, role: user.role }, "7d");
 
-    // HttpOnly Cookie setzen
-    cookies().set({
+    // ✅ Cookies async verwenden
+    const cookieStore = cookies(); // cookies() gibt jetzt ein Promise
+    (await cookieStore).set({
       name: "token",
       value: token,
       httpOnly: true,
@@ -38,7 +33,6 @@ export default function LoginPage() {
       maxAge: 60 * 60 * 24 * 7, // 7 Tage
     });
 
-    // Redirect nach erfolgreichem Login
     redirect("/admin");
   }
 
@@ -68,11 +62,17 @@ export default function LoginPage() {
         </div>
 
         <div className="btn">
-          <button className="button1" type="submit">Login</button>
-          <button className="button2" type="button">Sign Up</button>
+          <button className="button1" type="submit">
+            Login
+          </button>
+          <button className="button2" type="button">
+            Sign Up
+          </button>
         </div>
 
-        <button className="button3" type="button">Forgot Password</button>
+        <button className="button3" type="button">
+          Forgot Password
+        </button>
       </form>
     </div>
   );
