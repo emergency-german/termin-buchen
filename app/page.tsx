@@ -6,7 +6,7 @@ import { loginAction, registerAction } from "./actions";
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   
-  // Wählt die passende Action basierend auf dem Modus
+  // Selects the appropriate action based on the mode
   const currentAction = isRegister ? registerAction : loginAction;
   const [state, formAction, isPending] = useActionState(currentAction, null);
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
         <p id="heading">{isRegister ? "Registrieren" : "Login"}</p>
 
         {state?.error && (
-          <p style={{ color: "#ff4d4d", fontSize: "0.8rem", textAlign: "center" }}>
+          <p className="error-message">
             {state.error}
           </p>
         )}
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         <div className="btn">
           <button className="button1" type="submit" disabled={isPending}>
-            {isPending ? "Warten..." : isRegister ? "Account erstellen" : "Login"}
+            {isPending ? "Warten..." : isRegister ? "Account erstellen" : "Anmelden"}
           </button>
           
           <button 
@@ -51,7 +51,7 @@ export default function LoginPage() {
             type="button" 
             onClick={() => setIsRegister(!isRegister)}
           >
-            {isRegister ? "Zum Login" : "Sign Up"}
+            {isRegister ? "Zum Login" : "Registrieren"}
           </button>
         </div>
 
