@@ -16,7 +16,7 @@ export default function LoginPage() {
         <p id="heading">{isRegister ? "Registrieren" : "Login"}</p>
 
         {state?.error && (
-          <p style={{ color: "#ff4d4d", fontSize: "0.8rem", textAlign: "center" }}>
+          <p className="error-message">
             {state.error}
           </p>
         )}
