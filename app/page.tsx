@@ -51,7 +51,7 @@ export default function LoginPage() {
             type="button" 
             onClick={() => setIsRegister(!isRegister)}
           >
-            {isRegister ? "Zum Login" : "Sign Up"}
+            {isRegister ? "Zum Login" : "Registrieren"}
           </button>
         </div>
 
