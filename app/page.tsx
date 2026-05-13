@@ -6,7 +6,7 @@ import { loginAction, registerAction } from "./actions";
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   
-  // Wählt die passende Action basierend auf dem Modus
+  // Selects the appropriate action based on the mode
   const currentAction = isRegister ? registerAction : loginAction;
   const [state, formAction, isPending] = useActionState(currentAction, null);
 
