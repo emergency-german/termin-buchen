@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         <div className="btn">
           <button className="button1" type="submit" disabled={isPending}>
-            {isPending ? "Warten..." : isRegister ? "Account erstellen" : "Login"}
+            {isPending ? "Warten..." : isRegister ? "Account erstellen" : "Anmelden"}
           </button>
           
           <button 
